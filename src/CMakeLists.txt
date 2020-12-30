@@ -1,7 +1,7 @@
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
 find_package(CommonLibs QUIET)
-find_package(Qt5 COMPONENTS Core REQUIRED)
+find_package(Qt6 COMPONENTS Core REQUIRED)
 find_library(OpenSSL_cryptro_PATH NAMES libeay libeay32 libcrypto libcrypto32 eay crypto PATH_SUFFIXES "lib")
 find_library(OpenSSL_ssl_PATH NAMES ssleay ssleay32 libssl libssl32 eay ssl PATH_SUFFIXES "lib")
 find_path(OpenSSL_include_DIR NAMES openssl/ssl.h PATH_SUFFIXES "include")
@@ -20,7 +20,7 @@ if(OpenSSL_include_DIR AND OpenSSL_cryptro_PATH AND OpenSSL_ssl_PATH)
 	set(HAS_OPENSSL ON)
 endif()
 
-link_directories("${_qt5Core_install_prefix}/lib")
+link_directories("${_qt6Core_install_prefix}/lib")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/generated" "${CMAKE_CURRENT_SOURCE_DIR}/gsoap")
 if(HAS_OPENSSL)
 	include_directories("${OpenSSL_include_DIR}")
@@ -84,7 +84,8 @@ set(src_files
 	gsoap/stdsoap2.cpp
 	gsoap/dom.cpp
 	gsoap/wsaapi.c
-	gsoap/wsseapi-lite.c
+	gsoap/wsseapi.c
+	gsoap/mecevp.c
 	gsoap/qstringCompare.cpp
 	SoapCtx.cpp
 	Client.cpp
@@ -108,7 +109,9 @@ set(public_header_files
 	generated/soapH.h
 	gsoap/stdsoap2.h
 	gsoap/wsaapi.h
-	gsoap/wsseapi-lite.h
+	gsoap/mecevp.h
+	gsoap/wsseapi.h
+	gsoap/wsaapi.h
 	gsoap/AbsoluteOrRelativeTime.h
 	gsoap/qstringCompare.h
 	SoapCtx.h
@@ -126,7 +129,7 @@ endif()
 
 add_library(onvifcommon ${src_files} ${private_header_files} ${public_header_files})
 generate_export_header(onvifcommon EXPORT_FILE_NAME OnvifCommonExport.h)
-target_link_libraries(onvifcommon Qt5::Core)
+target_link_libraries(onvifcommon Qt6::Core)
 if(HAS_OPENSSL)
 	target_link_libraries(onvifcommon "${OpenSSL_ssl_PATH}" "${OpenSSL_cryptro_PATH}")
 endif()
@@ -303,6 +306,7 @@ set(src_files
 	OnvifPullPoint.cpp
 	Topics.cpp
 	NotificationFilter.cpp
+	gsoap/wsaapi.c
 )
 
 # private header
@@ -317,6 +321,7 @@ set(public_header_files
 	OnvifPullPoint.h
 	Topics.h
 	NotificationFilter.h
+	gsoap/wsaapi.h
 )
 
 add_library(onvifevent ${src_files} ${private_header_files} ${public_header_files})

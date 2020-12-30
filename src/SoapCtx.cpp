@@ -20,6 +20,7 @@
 #endif // WITH_OPENSSL
 #include "namespaces.nsmap"
 #include "wsaapi.h"
+#include "wsseapi.h"
 #include <QDebug>
 #include <QPointer>
 #include <QString>
@@ -57,7 +58,7 @@ struct CtxPrivate {
 	CtxPrivate(SoapCtx *pQ) :
 	 mpQ(pQ),
 	 mpSoap(nullptr),
-	 mMutex(QMutex::Recursive),
+	 mMutex(),
 	 mIsSaved(false),
 	 mIModeSaved(),
 	 mOModeSaved(),
@@ -71,7 +72,7 @@ struct CtxPrivate {
 
 	SoapCtx *mpQ;
 	soap *mpSoap;
-	QMutex mMutex;
+	QRecursiveMutex mMutex;
 	bool mIsSaved;
 	soap_mode mIModeSaved;
 	soap_mode mOModeSaved;
@@ -228,6 +229,7 @@ void SoapCtx::InitCtx() {
 
 #ifdef WITH_OPENSSL
 	soap_register_plugin(mpD->mpSoap, http_da);
+	soap_register_plugin(mpD->mpSoap, soap_wsse);
 #endif // WITH_OPENSSL
 	soap_register_plugin(mpD->mpSoap, soap_wsa);
 

@@ -67,7 +67,7 @@ void soap_serialize_xsd__string(struct soap *soap, QString const *a)
 void soap_default_xsd__string(struct soap *soap, QString *a)
 {
   (void)soap; /* appease -Wall -Werror */
-  *a = QString::null;
+  *a = 0;//QString::null;
 }
 
 int soap_out_xsd__string(struct soap *soap, char const *tag, int id, QString const *a, char const *type)
@@ -129,7 +129,7 @@ int soap_s2xsd__string(struct soap *soap, const char *s, QString *a)
   }
   else
   {
-    *a = QString::null;
+    *a = 0;//QString::null;
   }
   return soap->error;
 }

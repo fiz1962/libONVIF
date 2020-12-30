@@ -154,7 +154,7 @@ struct OnvifPullPointPrivate {
 		mpQ(pQ),
 		mEndpoint(rEndpoint),
 		mpWorker(nullptr),
-		mMutex(QMutex::Recursive),
+		mMutex(),
 		mActive(false) {
 
 	}
@@ -162,7 +162,7 @@ struct OnvifPullPointPrivate {
 	OnvifPullPoint *mpQ;
 	const QUrl mEndpoint;
 	OnvifPullPointWorker *mpWorker;
-	QMutex mMutex;
+	QRecursiveMutex mMutex;
 	bool mActive;
 };
 

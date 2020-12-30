@@ -58,7 +58,7 @@ bool operator==(bool b, const SafeBool<T>& rhs) {
 
 template <typename T, typename U>
 bool operator==(const SafeBool<T>& lhs, const SafeBool<U>& rhs) {
-	lhs.this_type_does_not_support_comparisons();
+	//lhs.this_type_does_not_support_comparisons();
 	return false;
 }
 

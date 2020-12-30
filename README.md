@@ -1,3 +1,10 @@
+Branch from https://github.com/Tereius/libONVIF
+
+Initial changes
+* Change CMake to use Qt6
+* Change TokenText authentication to TokenDigest
+
+
 # libONVIF
 | os | os_build | Status |
 |---|---|---|

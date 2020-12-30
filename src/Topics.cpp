@@ -60,7 +60,7 @@ void TopicSet::fromDom(soap_dom_element *pDom, QString topicPath /*= QString()*/
 		// Leaf topic node
 		Topic topic;
 		topic.SetName(QString::fromUtf8(pDom->tag()));
-		topic.SetTopicPath(topicPath.split("/", QString::SkipEmptyParts));
+		topic.SetTopicPath(topicPath.split("/", Qt::SkipEmptyParts));
 		auto pMessageDescr = (tt__MessageDescription*)messageDescrChild->get_node(SOAP_TYPE_tt__MessageDescription);
 		pMessageDescr->soap = pDom->soap;
 		topic.PopulateItems(pMessageDescr);

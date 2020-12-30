@@ -105,12 +105,12 @@ void OnvifDiscoveryWorker::run() {
 										qDebug() << "Got a match which doesn't provide an endpoint - skipping";
 										continue;
 									}
-									if(probe.Types) discoveryMatch.SetTypes(QString::fromUtf8(probe.Types).split(' ', QString::SkipEmptyParts));
+									if(probe.Types) discoveryMatch.SetTypes(QString::fromUtf8(probe.Types).split(' ', Qt::SkipEmptyParts));
 									else {
 										qWarning() << "Got a match which doesn't provide a type - skipping";
 										continue;
 									}
-									if(probe.Scopes && probe.Scopes->__item) discoveryMatch.SetScopes(QString::fromLocal8Bit(probe.Scopes->__item).split(' ', QString::SkipEmptyParts));
+									if(probe.Scopes && probe.Scopes->__item) discoveryMatch.SetScopes(QString::fromLocal8Bit(probe.Scopes->__item).split(' ', Qt::SkipEmptyParts));
 									else qWarning() << "Got a match which doesn't provide a scope:" << discoveryMatch.GetDeviceEndpoint();
 									qDebug() << "Got a match:" << discoveryMatch.GetDeviceEndpoint();
 									emit Match(discoveryMatch);
@@ -149,7 +149,7 @@ struct OnvifDiscoveryPrivate {
 		mTypes(),
 		mScopes(),
 		mpWorker(nullptr),
-		mMutex(QMutex::Recursive),
+		mMutex(),
 		mMatches(),
 		mActive(false) {
 
@@ -159,7 +159,7 @@ struct OnvifDiscoveryPrivate {
 	QStringList mTypes;
 	QStringList mScopes;
 	OnvifDiscoveryWorker *mpWorker;
-	QMutex mMutex;
+	QRecursiveMutex mMutex;
 	QList<DiscoveryMatch> mMatches;
 	bool mActive;
 };
