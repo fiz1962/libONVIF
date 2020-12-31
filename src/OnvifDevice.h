@@ -34,6 +34,8 @@ public:
 	SimpleResponse Initialize();
 	SimpleResponse InitializeTopicSet();
 
+        std::vector<tt__Profile*> GetProfiles();
+
 private:
 
 	OnvifDevicePrivate *mpD;

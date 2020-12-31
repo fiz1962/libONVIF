@@ -109,6 +109,12 @@ int main(int argc, char **argv) {
 			auto device = new OnvifDevice(response.GetResultObject().endpointUrl, &app);
 			device->SetAuth(response.GetResultObject().user, response.GetResultObject().pwd);
 			device->Initialize();
+
+            std::vector<tt__Profile*> profiles = device->GetProfiles();
+            qDebug() << "Num profiles = " << profiles.size();
+            for(int n=0; n<profiles.size();n++) {
+                qDebug() << "Profile(" << n << ") token = " << profiles[n]->token;
+            }
 		}
 	} else {
 		qCritical() << response.GetCompleteFault();

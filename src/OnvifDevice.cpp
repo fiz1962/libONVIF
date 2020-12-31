@@ -231,6 +231,20 @@ SimpleResponse OnvifDevice::Initialize() {
 	return SimpleResponse();
 }
 
+std::vector<tt__Profile*> OnvifDevice::GetProfiles() {
+	Request<_trt__GetProfiles> r;
+	auto res = mpD->mpOnvifMediaClient->GetProfiles(r);
+    std::vector<tt__Profile*> profiles;
+	if(auto rr = res.GetResultObject()) {
+        profiles = res.GetResultObject()->Profiles;
+		//if(capa->Device) {
+            qDebug() << "Got Profiles";
+		//}
+	}
+
+    return profiles;
+}
+
 SimpleResponse OnvifDevice::InitializeTopicSet() {
 
 	if(mpD->mpOnvifEventClient) {

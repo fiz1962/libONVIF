@@ -71,6 +71,12 @@ soap *Client::AcquireCtx() {
 
 	auto pCtx = mpD->mCtx->Acquire();
 	RestoreAuth(pCtx);
+
+			soap_wsse_delete_Security(pCtx);
+			//soap_wsse_add_UsernameTokenText(pCtx, nullptr, qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
+			soap_wsse_add_UsernameTokenDigest(pCtx, "Id", qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
+
+
 	return pCtx;
 }
 
@@ -91,6 +97,7 @@ void Client::ReleaseCtx(soap *pCtx) {
 }
 
 bool Client::ProcessAuthFaultAndRetry(soap *pCtx) {
+
 
 	bool ret = false;
         bool af = CheckIfAuthFault(pCtx);
