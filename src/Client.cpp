@@ -24,9 +24,12 @@
 
 
 #define CheckIfDigestAuthFault(pSoap) (pSoap->error == HTTP_UNAUTHORIZED)
-#define CheckIfWsTokenAuthFault(pSoap)                                                                  \
-	(pSoap->error == SOAP_FAULT && QString::compare(QString::fromLocal8Bit(*soap_faultsubcode(pSoap)), \
-	                                                    QString("\"http://www.onvif.org/ver10/error\":Unauthorized)")) != 0)
+#define CheckIfWsTokenAuthFault(pSoap)                                                                                                     \
+       ((pSoap->error == SOAP_CLI_FAULT || pSoap->error == SOAP_FAULT) &&                                                                        \
+        ((QString::compare(QString::fromLocal8Bit(*soap_faultsubcode(pSoap)), QString("\"http://www.onvif.org/ver10/error\":NotAuthorized)")) != \
+          0) ||                                                                                                                                  \
+         (QString::compare(QString::fromLocal8Bit(*soap_faultsubcode(pSoap)), QString("\"http://www.onvif.org/ver10/error\":Unauthorized)")) !=  \
+          0)))
 #define CheckIfAuthFault(pSoap) (CheckIfWsTokenAuthFault(pSoap) || CheckIfDigestAuthFault(pSoap))
 
 struct ClientPrivate {
@@ -71,12 +74,6 @@ soap *Client::AcquireCtx() {
 
 	auto pCtx = mpD->mCtx->Acquire();
 	RestoreAuth(pCtx);
-
-			soap_wsse_delete_Security(pCtx);
-			//soap_wsse_add_UsernameTokenText(pCtx, nullptr, qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
-			soap_wsse_add_UsernameTokenDigest(pCtx, "Id", qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
-
-
 	return pCtx;
 }
 
@@ -98,19 +95,14 @@ void Client::ReleaseCtx(soap *pCtx) {
 
 bool Client::ProcessAuthFaultAndRetry(soap *pCtx) {
 
-
 	bool ret = false;
-        bool af = CheckIfAuthFault(pCtx);
-        int er = pCtx->error;
-        QString desc=QString::fromLocal8Bit(*soap_faultsubcode(pCtx));
-        
 	if(mpD->mAuthProcessed == false && CheckIfAuthFault(pCtx)) {
-		if((mpD->mAuthmode == HTTP_DIGEST || mpD->mAuthmode == BOTH || mpD->mAuthmode == AUTO)){// && pCtx->authrealm) {
+		if((mpD->mAuthmode == HTTP_DIGEST || mpD->mAuthmode == BOTH || mpD->mAuthmode == AUTO) && pCtx->authrealm) {
 			// HTTP digest auth.
 			if(mpD->mAuthmode == AUTO) mpD->mAuthmode = HTTP_DIGEST;
-			mpD->mDigest = QString("192.168.1.62");//QString::fromLocal8Bit(pCtx->authrealm);
+			mpD->mDigest = QString::fromLocal8Bit(pCtx->authrealm);
 #ifdef WITH_OPENSSL
-			http_da_save(pCtx, &mpD->mDigestStore, /*pCtx->authrealm*/"192.168.1.62", qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
+			http_da_save(pCtx, &mpD->mDigestStore, pCtx->authrealm, qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
 #endif // WITH_OPENSSL
 		}
 		if(mpD->mAuthmode == WS_USERNAME_TOKEN || mpD->mAuthmode == BOTH || mpD->mAuthmode == AUTO) {
@@ -118,8 +110,6 @@ bool Client::ProcessAuthFaultAndRetry(soap *pCtx) {
 			if(mpD->mAuthmode == AUTO) mpD->mAuthmode = WS_USERNAME_TOKEN;
 		}
 		ret = mpD->mAuthProcessed = true;
-                mpD->mAuthmode = WS_USERNAME_TOKEN;
-                RestoreAuth(pCtx);
 	}
 	return ret;
 }
@@ -139,9 +129,8 @@ void Client::RestoreAuth(soap *pCtx) {
 		}
 		if(mpD->mAuthmode == WS_USERNAME_TOKEN || mpD->mAuthmode == BOTH) {
 			soap_wsse_delete_Security(pCtx);
-			//soap_wsse_add_UsernameTokenText(pCtx, nullptr, qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
-			soap_wsse_add_UsernameTokenDigest(pCtx, "Id", qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
-			//soap_wsse_add_Timestamp(pCtx, nullptr, 0);
+			soap_wsse_add_UsernameTokenDigest(pCtx, nullptr, qPrintable(mpD->mUserName), qPrintable(mpD->mPassword));
+			soap_wsse_add_Timestamp(pCtx, nullptr, 0);
 		}
 	}
 }
@@ -219,5 +208,7 @@ QSharedPointer<SoapCtx> Client::GetCtx() const {
 
 int Client::Retry(soap *pCtx) {
 
-	return ProcessAuthFaultAndRetry(pCtx);
+       auto retry = ProcessAuthFaultAndRetry(pCtx);
+       if(retry) RestoreAuth(pCtx);
+       return retry;
 }
