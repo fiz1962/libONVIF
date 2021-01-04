@@ -32,7 +32,6 @@
 #include "OnvifDeviceClient.h"
 #include <QUrl>
 
-
 struct OnvifDevicePrivate {
 
 	OnvifDevicePrivate(OnvifDevice *pQ) :
@@ -231,18 +230,47 @@ SimpleResponse OnvifDevice::Initialize() {
 	return SimpleResponse();
 }
 
-std::vector<tt__Profile*> OnvifDevice::GetProfiles() {
+std::vector<tt__Profile> OnvifDevice::GetProfiles() {
+    std::vector<tt__Profile> tokens;
+
 	Request<_trt__GetProfiles> r;
 	auto res = mpD->mpOnvifMediaClient->GetProfiles(r);
     std::vector<tt__Profile*> profiles;
-	if(auto rr = res.GetResultObject()) {
+
+    if(auto rr = res.GetResultObject()) {
         profiles = res.GetResultObject()->Profiles;
-		//if(capa->Device) {
-            qDebug() << "Got Profiles";
-		//}
+        // make a copy or soap may delete them later
+        for(unsigned int n=0; n<profiles.size(); n++)
+            tokens.push_back(*profiles[n]);
 	}
 
-    return profiles;
+    return tokens;
+}
+
+QString OnvifDevice::GetStreamUri(QString token) {
+    QString mediaUri = "";
+
+    Request<_trt__GetStreamUri> r;
+
+    r.ProfileToken = token;
+    tt__StreamSetup ssetup;
+    ssetup.Stream = tt__StreamType::RTP_Unicast;
+    tt__Transport stran;
+    tt__TransportProtocol ttproto;
+    ttproto = (tt__TransportProtocol)2;
+    stran.Protocol = ttproto;
+    stran.Tunnel = 0;
+    ssetup.Transport = &stran;
+
+    r.StreamSetup = &ssetup;
+
+    auto res = mpD->mpOnvifMediaClient->GetStreamUri(r);
+        //std::vector<tt__Profile*> profiles;
+    if(auto rr = res.GetResultObject()) {
+        mediaUri = rr->MediaUri->Uri;
+    }
+
+    return mediaUri;
 }
 
 SimpleResponse OnvifDevice::InitializeTopicSet() {

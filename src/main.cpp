@@ -110,11 +110,13 @@ int main(int argc, char **argv) {
 			device->SetAuth(response.GetResultObject().user, response.GetResultObject().pwd);
 			device->Initialize();
 
-            std::vector<tt__Profile*> profiles = device->GetProfiles();
-            qDebug() << "Num profiles = " << profiles.size();
-            for(int n=0; n<profiles.size();n++) {
-                qDebug() << "Profile(" << n << ") token = " << profiles[n]->token;
+            std::vector<tt__Profile> tokens = device->GetProfiles();
+
+            for(unsigned int n=0; n<tokens.size();n++) {
+                qDebug() << "Profile(" << n << ") token = " << tokens[n].Name << " StreamUri = [" << device->GetStreamUri(tokens[n].token);
             }
+
+
 		}
 	} else {
 		qCritical() << response.GetCompleteFault();

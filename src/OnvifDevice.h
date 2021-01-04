@@ -34,8 +34,9 @@ public:
 	SimpleResponse Initialize();
 	SimpleResponse InitializeTopicSet();
 
-        std::vector<tt__Profile*> GetProfiles();
-
+    std::vector<tt__Profile> GetProfiles();
+    QString GetStreamUri(QString profile);
+    
 private:
 
 	OnvifDevicePrivate *mpD;

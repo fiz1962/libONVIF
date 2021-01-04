@@ -21,7 +21,7 @@
 template <class T> struct SoapDeleterReq {
 
 	void operator()(T* p) {
-		if(p) p->soap_del();
+		if(p && p->soap) p->soap_del();
 	}
 };
 
